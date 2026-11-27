@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bilim Class - Dota 2 Edition</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg-color: #1a0507;
+      --panel-bg: #360a0f;
+      --accent-red: #800020;
+      --accent-bright: #b31237;
+      --text-color: #f5e6e8;
+      --text-gold: #ffd700;
+      --border-color: #5c1119;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 90vh;
+    }
+
+    .screen {
+      width: 100%;
+      max-width: 750px;
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: var(--text-color);
+      margin-top: 0;
+    }
+
+    .badge-president {
+      background: linear-gradient(45deg, var(--accent-bright), #500);
+      color: var(--text-gold);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      border: 1px solid var(--text-gold);
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    select, input[type="password"], input[type="text"] {
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-color);
+      color: #fff;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: var(--accent-red);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--accent-bright);
+    }
+
+    .logout-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: #aaa;
+      font-size: 14px;
+      padding: 6px 12px;
+      margin-bottom: 15px;
+      width: fit-content;
+    }
+
+    .logout-btn:hover {
+      background-color: var(--accent-red);
+      color: #fff;
+    }
+
+    .table-container {
+      overflow-y: auto;
+      max-height: 55vh;
+      margin-top: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--bg-color);
+      color: var(--text-gold);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .rank-badge {
+      font-weight: bold;
+      color: var(--text-gold);
+    }
+
+    .error-msg {
+      color: #ff4d4d;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. ЭКРАН АВТОРИЗАЦИИ -->
+  <div id="loginScreen" class="screen">
+    <h1>BILIM CLASS</h1>
+    <p style="text-align: center; color: #aaa;">Выберите профиль для входа</p>
+
+    <div class="form-group">
+      <label>Кто входит?</label>
+      <select id="userRoleSelect" onchange="togglePasswordInput()">
+        <option value="student">Ученик</option>
+        <option value="president">Шашнин Иван Александрович (Президент)</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="studentSelectGroup">
+      <label>Выберите свое имя:</label>
+      <select id="studentListSelect"></select>
+    </div>
+
+    <div class="form-group hidden" id="passwordGroup">
+      <label>Пароль Президента:</label>
+      <input type="password" id="passwordInput" placeholder="Введите пароль">
+      <div id="loginError" class="error-msg"></div>
+    </div>
+
+    <button style="width: 100%; margin-top: 10px;" onclick="login()">Войти</button>
+  </div>
+
+  <!-- 2. КАБИНЕТ ПРЕЗИДЕНТА -->
+  <div id="presidentScreen" class="screen hidden">
+    <button class="logout-btn" onclick="logout()">← Выйти</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div>
+        <h2 style="margin: 0; text-align: left;">Шашнин Иван Александрович</h2>
+        <small style="color: #aaa;">Панель управления оценками</small>
+      </div>
+      <span class="badge-president">Президент</span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Ученик</th>
+            <th>Балл</th>
+            <th>Ранг Dota 2</th>
+            <th>Оценка (1-10)</th>
+          </tr>
+        </thead>
+        <tbody id="adminStudentTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. КАБИНЕТ УЧЕНИКА -->
+  <div id="studentScreen" class="screen hidden">
+    <button class="logout-btn" onclick="logout()">← Выйти</button>
+    <h2 id="studentViewName">Имя Ученика</h2>
+    
+    <div style="background-color: var(--bg-color); padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px;">
+      <p style="margin: 0; color: #aaa;">Ваш средний балл:</p>
+      <h1 id="studentViewScore" style="color: var(--text-gold); font-size: 42px; margin: 10px 0;">0.0 / 10</h1>
+      <p style="margin: 0;">Ваш ранг: <span id="studentViewRank" class="rank-badge">Рекрут</span></p>
+    </div>
+
+    <h4 style="margin-top: 25px;">Ваши оценки от Президента:</h4>
+    <p id="studentViewGrades" style="background-color: var(--bg-color); padding: 12px; border-radius: 6px;">Оценок пока нет</p>
+  </div>
+
+  <script>
+    const PRESIDENT_PASS = "7620";
+
+    let students = [
+      { id: 1, name: "Абай Амина Ержігітқызы", grades: [] },
+      { id: 2, name: "Абдуллаев Анзор Азизович", grades: [] },
+      { id: 3, name: "Ажибеков Абдурауф Эркинович", grades: [] },
+      { id: 4, name: "Айтбаева Томирис Расуловна", grades: [] },
+      { id: 5, name: "Ван Лент Алан Эдвин", grades: [] },
+      { id: 6, name: "Дулатова Жания Ержановна", grades: [] },
+      { id: 7, name: "Жумагулов Нурали Ганиевич", grades: [] },
+      { id: 8, name: "Ибрагимова Айлина Шамилевна", grades: [] },
+      { id: 9, name: "Кулинов Ихсан Бахрамович", grades: [] },
+      { id: 10, name: "Максутова Альбина Закировна", grades: [] },
+      { id: 11, name: "Махмутжанов Карим Рустамович", grades: [] },
+      { id: 12, name: "Михайлов Ярослав Николаевич", grades: [] },
+      { id: 13, name: "Морозов Александр Юрьевич", grades: [] },
+      { id: 14, name: "Рау Илья Игоревич", grades: [] },
+      { id: 15, name: "Рахман Даниела Вадимовна", grades: [] },
+      { id: 16, name: "Рашидинов Нур Али Дильшатов", grades: [] },
+      { id: 17, name: "Сабитов Али Пархатович", grades: [] },
+      { id: 18, name: "Сипаров Самир Аблизизович", grades: [] },
+      { id: 19, name: "Томас Адам Александер Дилан", grades: [] },
+      { id: 20, name: "Ушурова Айлин Тахировна", grades: [] },
+      { id: 21, name: "Юсупова Рамилям Мидатовна", grades: [] }
+    ];
+
+    function getDotaRank(score) {
+      if (score === 0) return "Рекрут (Herald)";
+      if (score < 2) return "Страж (Guardian)";
+      if (score < 4) return "Рыцарь (Knight)";
+      if (score < 6) return "Герой (Hero)";
+      if (score < 8) return "Легенда (Legend)";
+      if (score < 9) return "Властелин (Ancient)";
+      if (score < 10) return "Божество (Divine)";
+      return "Титан (Immortal)";
+    }
+
+    function initStudentSelect() {
+      const select = document.getElementById('studentListSelect');
+      select.innerHTML = "";
+      students.forEach(student => {
+        const opt = document.createElement('option');
+        opt.value = student.id;
+        opt.textContent = student.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function togglePasswordInput() {
+      const role = document.getElementById('userRoleSelect').value;
+      const passGroup = document.getElementById('passwordGroup');
+      const studentGroup = document.getElementById('studentSelectGroup');
+      
+      if (role === 'president') {
+        passGroup.classList.remove('hidden');
+        studentGroup.classList.add('hidden');
+      } else {
+        passGroup.classList.add('hidden');
+        studentGroup.classList.remove('hidden');
+      }
+    }
+
+    function login() {
+      const role = document.getElementById('userRoleSelect').value;
+      
+      if (role === 'president') {
+        const pass = document.getElementById('passwordInput').value;
+        if (pass === PRESIDENT_PASS) {
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('presidentScreen').classList.remove('hidden');
+          document.getElementById('loginError').textContent = "";
+          document.getElementById('passwordInput').value = "";
+          renderPresidentView();
+        } else {
+          document.getElementById('loginError').textContent = "Неверный пароль!";
+        }
+      } else {
+        const studentId = Number(document.getElementById('studentListSelect').value);
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('studentScreen').classList.remove('hidden');
+        renderStudentView(studentId);
+      }
+    }
+
+    function logout() {
+      document.getElementById('presidentScreen').classList.add('hidden');
+      document.getElementById('studentScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+    }
+
+    function addGrade(studentId, grade) {
+      const student = students.find(s => s.id === studentId);
+      if (student && grade) {
+        student.grades.push(Number(grade));
+        renderPresidentView();
+      }
+    }
+
+    function renderPresidentView() {
+      const tbody = document.getElementById('adminStudentTable');
+      tbody.innerHTML = "";
+
+      students.forEach(student => {
+        const avg = student.grades.length > 0 
+          ? (student.grades.reduce((a, b) => a + b, 0) / student.grades.length).toFixed(1)
+          : 0;
+        const rank = getDotaRank(Number(avg));
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${student.name}</strong><br><small style="color:#aaa">Оценки: ${student.grades.join(', ') || 'нет'}</small></td>
+          <td>${avg}</td>
+          <td><span class="rank-badge">${rank}</span></td>
+          <td>
+            <select onchange="addGrade(${student.id}, this.value)">
+              <option value="">+</option>
+              ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join('')}
+            </select>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderStudentView(studentId) {
+      const student = students.find(s => s.id === studentId);
+      if (!student) return;
+
+      const avg = student.grades.length > 0 
+        ? (student.grades.reduce((a, b) => a + b, 0) / student.grades.length).toFixed(1)
+        : 0;
+
+      document.getElementById('studentViewName').textContent = student.name;
+      document.getElementById('studentViewScore').textContent = `${avg} / 10`;
+      document.getElementById('studentViewRank').textContent = getDotaRank(Number(avg));
+      document.getElementById('studentViewGrades').textContent = student.grades.length > 0 
+        ? student.grades.join(', ') 
+        : "Оценок пока нет";
+    }
+
+    initStudentSelect();
+  </script>
+</body>
+</html>

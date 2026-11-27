@@ -1,0 +1,8 @@
+{
+  "name": "Bilim Class",
+  "short_name": "Bilim",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a0507",
+  "theme_color": "#800020"
+}
